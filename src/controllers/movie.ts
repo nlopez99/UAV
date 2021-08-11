@@ -49,6 +49,19 @@ export class MovieController {
         }
     }
 
+    public async getMoviesInLibrary(): Promise<IMovie[]> {
+        const movieQueryURL = this.movieEndpointURL + `?apiKey=${this.apiKey}`;
+        const response = await axios.get(movieQueryURL);
+        const movies: IMovie[] = response.data;
+        return movies;
+    }
+
+    public async checkMovieExistsInLibrary(movie: IMovie): Promise<boolean> {
+        const moviesInLibrary: IMovie[] = await this.getMoviesInLibrary();
+        const movieExists: boolean = moviesInLibrary.some(movieInLibrary => movieInLibrary.tmdbId === movie.tmdbId);
+        return movieExists;
+    }
+
     private createMovieDataToPost(movie: IMovie): string {
         const movieData: IMovie = this.setRadarrConfigDataOnJSON(movie);
         return JSON.stringify(movieData);

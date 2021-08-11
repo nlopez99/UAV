@@ -21,9 +21,26 @@ app.get('/movie', async (req: Request, res: Response) => {
     res.json(movies);
 });
 
+
+app.get('/movies', async (req: Request, res: Response) => {
+    try {
+        const movies: IMovie[] = await movieController.getMoviesInLibrary();
+        res.status(200).json(movies);
+    } catch {
+        res.status(500).send('Internal Server Error');
+    }
+    
+});
+
 app.post('/movie', async (req: Request, res: Response) => {
     const movie: IMovie = req.body;
-    movieController.downloadMovie(movie);
+    const movieExistsInLibrary: boolean = await movieController.checkMovieExistsInLibrary(movie);
+    if (movieExistsInLibrary) {
+        res.status(409).send('Movie already exists in library');
+    } else {
+        movieController.downloadMovie(movie);
+        res.status(201).send(`Movie ${movie.title} added to library`);
+    }
 });
 
 app.listen(port, () => {
