@@ -1,4 +1,4 @@
-export interface ISeries {
+export interface ITVSeries {
     title: string;
     alternateTitles: string[];
     sortTitle: string;

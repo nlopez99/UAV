@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ISeries } from '../typings/tv';
+import { ITVSeries } from '../typings/tv';
 import { AxiosConfig } from '../typings/axios';
 import { MediaController } from '../typings/media';
 import { config } from '../config/appConfig';
@@ -10,7 +10,6 @@ const {
 
 export class TVController extends MediaController {
     private tvEndpointURL: string;
-    private axiosConfig: AxiosConfig;
 
     constructor() {
         super();
@@ -26,7 +25,7 @@ export class TVController extends MediaController {
         };
     }
 
-    public async getSeriesByName(name: string): Promise<ISeries[]> {
+    public async getSeriesByName(name: string): Promise<ITVSeries[]> {
         let url = this.tvEndpointURL + `?name=${name}`;
         let response = await axios.get(url, this.axiosConfig);
         return response.data;

@@ -14,9 +14,7 @@ const {
 
 export class MovieController extends MediaController {
     
-    
     private movieEndpointURL: string;
-    private axiosConfig: AxiosConfig;
 
     constructor() {
         super();
