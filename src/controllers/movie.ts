@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { IMovie } from '../typings/movie';
-import { AxiosConfig } from '../typings/axios';
 import { MediaController } from '../typings/media';
 import { config } from '../config/appConfig';
 
@@ -8,12 +7,7 @@ const {
     radarr: { apiKey, rootFolderPath, hostURL }
 } = config;
 
-const {
-    axios: {axiosConfig}
-} = config;
-
 export class MovieController extends MediaController {
-    
     private movieEndpointURL: string;
 
     constructor() {
@@ -44,10 +38,9 @@ export class MovieController extends MediaController {
 
     public async downloadMovie(movie: IMovie): Promise<void> {
         try {
-            const moviePostURL = this.movieEndpointURL;
             const movieData: string = this.createMovieDataToPost(movie);
             this.addMovieDataToConfig(movieData);
-            const response = await axios.post(moviePostURL, this.axiosConfig);
+            const response = await axios.post(this.movieEndpointURL, this.axiosConfig);
             const successful = response.status === 201;
 
             if (!successful) {
@@ -55,6 +48,7 @@ export class MovieController extends MediaController {
             } else {
                 console.log(`${movie.title} was successfully added to Radarr`);
             }
+
         } catch (error) {
             console.log(error);
         }
@@ -65,16 +59,15 @@ export class MovieController extends MediaController {
     }
 
     public async getMoviesInLibrary(): Promise<IMovie[]> {
-        const movieQueryURL = this.movieEndpointURL + `?apiKey=${this.apiKey}`;
-        const response = await axios.get(movieQueryURL);
+        const response = await axios.get(this.movieEndpointURL, this.axiosConfig);
         const movies: IMovie[] = response.data;
-        const availableMovies: IMovie[] = movies.filter(movie => movie.hasFile === true);
+        const availableMovies: IMovie[] = movies.filter((movie) => movie.hasFile === true);
         return availableMovies;
     }
 
     public async checkMovieExistsInLibrary(movie: IMovie): Promise<boolean> {
         const moviesInLibrary: IMovie[] = await this.getMoviesInLibrary();
-        const movieExists: boolean = moviesInLibrary.some(movieInLibrary => movieInLibrary.tmdbId === movie.tmdbId);
+        const movieExists: boolean = moviesInLibrary.some((movieInLibrary) => movieInLibrary.tmdbId === movie.tmdbId);
         return movieExists;
     }
 

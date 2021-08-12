@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc && node dist/index.js",
-    "start:dev": "tsc && nodemon dist/index.js",
+    "start:dev": "ts-node ./src/index.ts",
     "build": "tsc",
     "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "lint": "eslint ."
@@ -26,6 +26,7 @@
     "@types/node": "^15.3.0",
     "nodemon": "^2.0.12",
     "prettier": "^2.3.0",
+    "ts-node": "^10.2.0",
     "tslint": "^5.12.1"
   }
 }

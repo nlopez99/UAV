@@ -1,8 +1,8 @@
 export type AxiosConfig = {
-    headers: AxiosHeaders,
-    data?: string
-}
+    headers: AxiosHeaders;
+    data?: string;
+};
 
 type AxiosHeaders = {
-    "X-Api-Key": string,
-}
+    'X-Api-Key': string;
+};

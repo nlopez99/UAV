@@ -1,4 +1,4 @@
-import { AxiosConfig } from "./axios";
+import { AxiosConfig } from './axios';
 
 export class MediaController {
     apiKey: string;
