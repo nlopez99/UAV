@@ -1,29 +1,42 @@
 import axios from 'axios';
 import { IMovie } from '../typings/movie';
+import { AxiosConfig } from '../typings/axios';
+import { MediaController } from '../typings/media';
 import { config } from '../config/appConfig';
 
 const {
-    radarr: { apiKey, rootFolderPath }
+    radarr: { apiKey, rootFolderPath, hostURL }
 } = config;
 
-export class MovieController {
-    private apiKey: string;
-    private rootFolderPath: string;
-    private defaultQualityProfileId: number;
+const {
+    axios: {axiosConfig}
+} = config;
+
+export class MovieController extends MediaController {
+    
+    
     private movieEndpointURL: string;
+    private axiosConfig: AxiosConfig;
 
     constructor() {
+        super();
         this.apiKey = apiKey;
         this.rootFolderPath = rootFolderPath;
         this.defaultQualityProfileId = 4;
-        this.movieEndpointURL = 'http://ulysses.whatbox.ca:14633/api/v3/movie';
+        this.hostURL = hostURL;
+        this.movieEndpointURL = this.hostURL + 'api/v3/movie';
+        this.axiosConfig = {
+            headers: {
+                'X-Api-Key': this.apiKey
+            }
+        };
     }
 
     public async searchMovieByName(name: string): Promise<IMovie[]> {
         try {
             const query: string = this.convertNameToQueryString(name);
-            const movieQueryURL = this.movieEndpointURL + `/lookup?term=${query}&apiKey=${this.apiKey}`;
-            const response = await axios.get(movieQueryURL);
+            const movieQueryURL = this.movieEndpointURL + `/lookup?term=${query}`;
+            const response = await axios.get(movieQueryURL, this.axiosConfig);
             const movies: IMovie[] = response.data;
             return movies;
         } catch (error) {
@@ -33,10 +46,10 @@ export class MovieController {
 
     public async downloadMovie(movie: IMovie): Promise<void> {
         try {
-            const moviePostURL = this.movieEndpointURL + `?apiKey=${this.apiKey}`;
+            const moviePostURL = this.movieEndpointURL;
             const movieData: string = this.createMovieDataToPost(movie);
-
-            const response = await axios.post(moviePostURL, movieData);
+            this.addMovieDataToConfig(movieData);
+            const response = await axios.post(moviePostURL, this.axiosConfig);
             const successful = response.status === 201;
 
             if (!successful) {
@@ -49,11 +62,16 @@ export class MovieController {
         }
     }
 
+    private addMovieDataToConfig(movieData: string): void {
+        this.axiosConfig.data = movieData;
+    }
+
     public async getMoviesInLibrary(): Promise<IMovie[]> {
         const movieQueryURL = this.movieEndpointURL + `?apiKey=${this.apiKey}`;
         const response = await axios.get(movieQueryURL);
         const movies: IMovie[] = response.data;
-        return movies;
+        const availableMovies: IMovie[] = movies.filter(movie => movie.hasFile === true);
+        return availableMovies;
     }
 
     public async checkMovieExistsInLibrary(movie: IMovie): Promise<boolean> {

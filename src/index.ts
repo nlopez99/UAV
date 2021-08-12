@@ -7,7 +7,6 @@ const {
     app: { listeningPort }
 } = config;
 
-
 const app = express();
 const port = listeningPort || 3000;
 
@@ -15,12 +14,17 @@ const movieController = new MovieController();
 
 app.use(express.json());
 
+app.use((req: Request, res: Response, next: express.NextFunction) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+
 app.get('/movie', async (req: Request, res: Response) => {
     const name: string = req.query.name as string;
     const movies: IMovie[] = await movieController.searchMovieByName(name);
     res.json(movies);
 });
-
 
 app.get('/movies', async (req: Request, res: Response) => {
     try {
@@ -29,7 +33,6 @@ app.get('/movies', async (req: Request, res: Response) => {
     } catch {
         res.status(500).send('Internal Server Error');
     }
-    
 });
 
 app.post('/movie', async (req: Request, res: Response) => {
