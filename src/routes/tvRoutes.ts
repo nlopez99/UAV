@@ -24,10 +24,10 @@ router.post('/', async (req: Request, res: Response) => {
     const series: ITVSeries = req.body;
     const seriesExistsInLibrary: boolean = await tvController.checkSeriesExistsInLibrary(series);
     if (seriesExistsInLibrary) {
-        res.status(409).send('Movie already exists in library');
+        res.status(409).send('Series already exists in library');
     } else {
         tvController.downloadSeries(series);
-        res.status(201).send(`Movie ${series.title} added to library`);
+        res.status(201).send(`Series ${series.title} added to library`);
     }
 });
 

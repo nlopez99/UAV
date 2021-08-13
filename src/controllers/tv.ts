@@ -25,11 +25,49 @@ export class TVController extends MediaController {
     }
 
     public async searchSeriesByName(name: string): Promise<ITVSeries[]> {
-        let url = this.tvEndpointURL + `?name=${name}`;
-        let response = await axios.get(url, this.axiosConfig);
+        const query = this.convertNameToQueryString(name);
+        const tvQueryURL = this.tvEndpointURL + `/lookup?term=${query}`;
+        const response = await axios.get(tvQueryURL, this.axiosConfig);
         return response.data;
     }
 
+    public async getSeriesInLibrary(): Promise<ITVSeries[]> {
+        const response = await axios.get(this.tvEndpointURL, this.axiosConfig)
+        const tvShowData:ITVSeries[] = response.data;
+        const tvShowsInLibrary = tvShowData.filter((show) => show.sizeOnDisk > 0);
+        return tvShowsInLibrary
+    }
+
+    public async checkSeriesExistsInLibrary(series: ITVSeries): Promise<boolean> {
+        const seriesInLibrary: ITVSeries[] = await this.getSeriesInLibrary();
+        const seriesExists: boolean = seriesInLibrary.some((seriesInLibrary) => seriesInLibrary.tvdbId === series.tvdbId);
+        return seriesExists;
+    }
+
+    public async downloadSeries(series: ITVSeries): Promise<void> {
+        const seriesData = this.createSeriesDataToPost(series);
+        this.setSeriesDataOnConfig(seriesData)
+        const response = await axios.post(this.tvEndpointURL, this.axiosConfig);
+        const successful = response.status === 201;
+
+        if (!successful) {
+            throw new Error(`${response.status}: ${response.statusText}`);
+        } else {
+            console.log(`${series.title} was successfully added to Radarr`);
+        }
+}
+
+    private setSeriesDataOnConfig(seriesData: string): void {
+        this.axiosConfig.data = seriesData
+    }
+
+    private createSeriesDataToPost(series: ITVSeries): string {
+        const seriesFolderPath: string = this.rootFolderPath + series.title;
+        series.path = seriesFolderPath;
+        series.qualityProfileId = this.defaultQualityProfileId;
+        return JSON.stringify(series)
+    }
+    
     private convertNameToQueryString(name: string): string {
         const query: string = name.split(' ').join('%20');
         return query;

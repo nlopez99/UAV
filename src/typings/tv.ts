@@ -1,15 +1,15 @@
 export interface ITVSeries {
     title: string;
-    alternateTitles: string[];
+    alternateTitles?: string[];
     sortTitle: string;
     seasonCount: number;
-    totalEpisodeCount: number;
-    episodeCount: number;
-    episodeFileCount: number;
-    sizeOnDisk: number;
-    status: string;
+    totalEpisodeCount?: number;
+    episodeCount?: number;
+    episodeFileCount?: number;
+    sizeOnDisk?: number;
+    status?: string;
     overview: string;
-    previousAiring: string;
+    previousAiring?: string;
     network: string;
     airTime: string;
     images: Image[];
@@ -35,8 +35,8 @@ export interface ITVSeries {
     tags: any[];
     added: string;
     ratings: Ratings;
-    qualityProfileId: number;
-    id: number;
+    qualityProfileId?: number;
+    id?: number;
 }
 
 interface Ratings {
