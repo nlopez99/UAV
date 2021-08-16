@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { TVSeries } from '../typings/tv';
 import { MediaServiceConstructorOptions } from '../typings/media';
-import { TVService } from '../controllers/tv';
+import { TVService } from '../services/tv';
 import { config } from '../config/appConfig';
 
 const {

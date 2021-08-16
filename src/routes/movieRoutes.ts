@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { Movie } from '../typings/movie';
 import { MediaServiceConstructorOptions } from '../typings/media';
-import { MovieService } from '../controllers/movie';
+import { MovieService } from '../services/movie';
 import { config } from '../config/appConfig';
 const {
     radarr: { apiKey, rootFolderPath, hostURL }
