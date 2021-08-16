@@ -1,20 +1,37 @@
 import { Router, Request, Response } from 'express';
-import { IMovie } from '../typings/movie';
-import { MovieController } from '../controllers/movie';
+import { Movie } from '../typings/movie';
+import { MediaServiceConstructorOptions } from '../typings/media';
+import { MovieService } from '../controllers/movie';
+import { config } from '../config/appConfig';
+const {
+    radarr: { apiKey, rootFolderPath, hostURL }
+} = config;
 
-const movieController = new MovieController();
+const serviceOptions: MediaServiceConstructorOptions = {
+    rootFolderPath: rootFolderPath,
+    hostURL: hostURL,
+    defaultQualityProfileId: 4,
+    endpointURL: hostURL + 'api/v3/movie',
+    axiosConfig: {
+        headers: {
+            'X-Api-Key': apiKey
+        }
+    }
+};
+
+const movieService = new MovieService(serviceOptions);
 
 const router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
     const name: string = req.query.name as string;
-    const movies: IMovie[] = await movieController.searchMovieByName(name);
+    const movies: Movie[] = await movieService.searchByName(name);
     res.json(movies);
 });
 
 router.get('/library', async (req: Request, res: Response) => {
     try {
-        const movies: IMovie[] = await movieController.getMoviesInLibrary();
+        const movies: Movie[] = await movieService.getAllInLibrary();
         res.status(200).json(movies);
     } catch {
         res.status(500).send('Internal Server Error');
@@ -22,12 +39,12 @@ router.get('/library', async (req: Request, res: Response) => {
 });
 
 router.post('/', async (req: Request, res: Response) => {
-    const movie: IMovie = req.body;
-    const movieExistsInLibrary: boolean = await movieController.checkMovieExistsInLibrary(movie);
+    const movie: Movie = req.body;
+    const movieExistsInLibrary: boolean = await movieService.checkIfExistsInLibrary(movie);
     if (movieExistsInLibrary) {
         res.status(409).send('Movie already exists in library');
     } else {
-        movieController.downloadMovie(movie);
+        movieService.download(movie);
         res.status(201).send(`Movie ${movie.title} added to library`);
     }
 });

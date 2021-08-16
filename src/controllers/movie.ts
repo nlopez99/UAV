@@ -1,46 +1,39 @@
 import axios from 'axios';
-import { IMovie } from '../typings/movie';
-import { MediaController } from '../typings/media';
+import { Movie } from '../typings/movie';
+import { MediaService, MediaServiceConstructorOptions, AxiosConfig } from '../typings/media';
 import { config } from '../config/appConfig';
 
 const {
     radarr: { apiKey, rootFolderPath, hostURL }
 } = config;
 
-export class MovieController extends MediaController {
-    private movieEndpointURL: string;
+export class MovieService implements MediaService<Movie> {
+    private rootFolderPath: string;
+    private defaultQualityProfileId: number;
+    private endpointURL: string;
+    private axiosConfig: AxiosConfig;
 
-    constructor() {
-        super();
-        this.apiKey = apiKey;
-        this.rootFolderPath = rootFolderPath;
-        this.defaultQualityProfileId = 4;
-        this.hostURL = hostURL;
-        this.movieEndpointURL = this.hostURL + 'api/v3/movie';
-        this.axiosConfig = {
-            headers: {
-                'X-Api-Key': this.apiKey
-            }
-        };
+    constructor(serviceOptions: MediaServiceConstructorOptions) {
+        Object.assign(this, serviceOptions);
     }
 
-    public async searchMovieByName(name: string): Promise<IMovie[]> {
+    public async searchByName(name: string): Promise<Movie[]> {
         try {
             const query: string = this.convertNameToQueryString(name);
-            const movieQueryURL = this.movieEndpointURL + `/lookup?term=${query}`;
+            const movieQueryURL = this.endpointURL + `/lookup?term=${query}`;
             const response = await axios.get(movieQueryURL, this.axiosConfig);
-            const movies: IMovie[] = response.data;
+            const movies: Movie[] = response.data;
             return movies;
         } catch (error) {
             console.log(error);
         }
     }
 
-    public async downloadMovie(movie: IMovie): Promise<void> {
+    public async download(movie: Movie): Promise<void> {
         try {
             const movieData: string = this.createMovieDataToPost(movie);
             this.addMovieDataToConfig(movieData);
-            const response = await axios.post(this.movieEndpointURL, this.axiosConfig);
+            const response = await axios.post(this.endpointURL, this.axiosConfig);
             const successful = response.status === 201;
 
             if (!successful) {
@@ -48,7 +41,6 @@ export class MovieController extends MediaController {
             } else {
                 console.log(`${movie.title} was successfully added to Radarr`);
             }
-
         } catch (error) {
             console.log(error);
         }
@@ -58,25 +50,25 @@ export class MovieController extends MediaController {
         this.axiosConfig.data = movieData;
     }
 
-    public async getMoviesInLibrary(): Promise<IMovie[]> {
-        const response = await axios.get(this.movieEndpointURL, this.axiosConfig);
-        const movies: IMovie[] = response.data;
-        const availableMovies: IMovie[] = movies.filter((movie) => movie.hasFile === true);
+    public async getAllInLibrary(): Promise<Movie[]> {
+        const response = await axios.get(this.endpointURL, this.axiosConfig);
+        const movies: Movie[] = response.data;
+        const availableMovies: Movie[] = movies.filter((movie) => movie.hasFile === true);
         return availableMovies;
     }
 
-    public async checkMovieExistsInLibrary(movie: IMovie): Promise<boolean> {
-        const moviesInLibrary: IMovie[] = await this.getMoviesInLibrary();
+    public async checkIfExistsInLibrary(movie: Movie): Promise<boolean> {
+        const moviesInLibrary: Movie[] = await this.getAllInLibrary();
         const movieExists: boolean = moviesInLibrary.some((movieInLibrary) => movieInLibrary.tmdbId === movie.tmdbId);
         return movieExists;
     }
 
-    private createMovieDataToPost(movie: IMovie): string {
-        const movieData: IMovie = this.setRadarrConfigDataOnJSON(movie);
+    private createMovieDataToPost(movie: Movie): string {
+        const movieData: Movie = this.setRadarrConfigDataOnJSON(movie);
         return JSON.stringify(movieData);
     }
 
-    private setRadarrConfigDataOnJSON(movie: IMovie): IMovie {
+    private setRadarrConfigDataOnJSON(movie: Movie): Movie {
         const movieFolderPath: string = this.rootFolderPath + movie.title;
         movie.path = movieFolderPath;
         movie.folderName = movieFolderPath;
@@ -84,7 +76,7 @@ export class MovieController extends MediaController {
         return movie;
     }
 
-    private convertNameToQueryString(name: string): string {
+    public convertNameToQueryString(name: string): string {
         const query: string = name.split(' ').join('+');
         return query;
     }
