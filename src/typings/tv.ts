@@ -36,6 +36,7 @@ export interface TVSeries {
     added: string;
     ratings: Ratings;
     qualityProfileId?: number;
+    languageProfileId?: number;
     id?: number;
 }
 

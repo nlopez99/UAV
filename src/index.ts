@@ -12,14 +12,14 @@ const port = listeningPort || 3000;
 
 app.use(express.json());
 
+app.use('/movie', movieRoutes);
+app.use('/tv', tvRoutes);
+
 app.use((req: Request, res: Response, next: NextFunction) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
 });
-
-app.use('/movie', movieRoutes);
-app.use('/tv', tvRoutes);
 
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);

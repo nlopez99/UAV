@@ -8,9 +8,10 @@ export class TVService implements MediaService<TVSeries> {
     private defaultQualityProfileId: number;
     private endpointURL: string;
     private axiosConfig: AxiosConfig;
+    private apiKey: string = 'ba56e43149de40739d4aa2070ed82be6';
 
     constructor(serviceOptions: MediaServiceConstructorOptions) {
-       Object.assign(this, serviceOptions);
+        Object.assign(this, serviceOptions);
     }
 
     public async searchByName(name: string): Promise<TVSeries[]> {
@@ -36,11 +37,9 @@ export class TVService implements MediaService<TVSeries> {
     }
 
     public async download(series: TVSeries): Promise<void> {
-        const seriesData = this.createSeriesDataToPost(series);
-        this.setSeriesDataOnConfig(seriesData);
-        const response = await axios.post(this.endpointURL, this.axiosConfig);
+        const seriesData = this.createSeriesDataToPost(series)
+        const response = await axios.post(this.endpointURL + `?apikey=${this.apiKey}`, seriesData);
         const successful = response.status === 201;
-
         if (!successful) {
             throw new Error(`${response.status}: ${response.statusText}`);
         } else {
@@ -48,14 +47,11 @@ export class TVService implements MediaService<TVSeries> {
         }
     }
 
-    private setSeriesDataOnConfig(seriesData: string): void {
-        this.axiosConfig.data = seriesData;
-    }
-
     private createSeriesDataToPost(series: TVSeries): string {
         const seriesFolderPath: string = this.rootFolderPath + series.title;
         series.path = seriesFolderPath;
         series.qualityProfileId = this.defaultQualityProfileId;
+        series.languageProfileId = 1;
         return JSON.stringify(series);
     }
 

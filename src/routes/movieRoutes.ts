@@ -24,9 +24,13 @@ const movieService = new MovieService(serviceOptions);
 const router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
-    const name: string = req.query.name as string;
-    const movies: Movie[] = await movieService.searchByName(name);
-    res.json(movies);
+    const name: string | undefined = req.query.name as string;
+    if (name === undefined) {
+        res.status(400).send("'name' query parameter is needed.");
+    } else {
+        const movies: Movie[] = await movieService.searchByName(name);
+        res.json(movies);
+    }
 });
 
 router.get('/library', async (req: Request, res: Response) => {

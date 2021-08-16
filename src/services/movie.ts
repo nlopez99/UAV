@@ -46,10 +46,6 @@ export class MovieService implements MediaService<Movie> {
         }
     }
 
-    private addMovieDataToConfig(movieData: string): void {
-        this.axiosConfig.data = movieData;
-    }
-
     public async getAllInLibrary(): Promise<Movie[]> {
         const response = await axios.get(this.endpointURL, this.axiosConfig);
         const movies: Movie[] = response.data;
@@ -74,6 +70,10 @@ export class MovieService implements MediaService<Movie> {
         movie.folderName = movieFolderPath;
         movie.qualityProfileId = this.defaultQualityProfileId;
         return movie;
+    }
+
+    private addMovieDataToConfig(movieData: string): void {
+        this.axiosConfig.data = movieData;
     }
 
     public convertNameToQueryString(name: string): string {

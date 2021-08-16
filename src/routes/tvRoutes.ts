@@ -8,12 +8,11 @@ const {
     sonarr: { apiKey, rootFolderPath, hostURL }
 } = config;
 
-
 const serviceOptions: MediaServiceConstructorOptions = {
     rootFolderPath: rootFolderPath,
     hostURL: hostURL,
     defaultQualityProfileId: 4,
-    endpointURL: hostURL + 'api/series',
+    endpointURL: hostURL + 'api/v3/series',
     axiosConfig: {
         headers: {
             'X-Api-Key': apiKey
@@ -26,9 +25,13 @@ const tvService = new TVService(serviceOptions);
 const router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
-    const name: string = req.query.name as string;
-    const series: TVSeries[] = await tvService.searchByName(name);
-    res.json(series);
+    const name: string | undefined = req.query.name as string;
+    if (name === undefined) {
+        res.status(400).send("'name' query parameter is needed.");
+    } else {
+        const series: TVSeries[] = await tvService.searchByName(name);
+        res.json(series);
+    }
 });
 
 router.get('/library', async (req: Request, res: Response) => {
