@@ -35,6 +35,7 @@ export interface TVSeries {
     tags: any[];
     added: string;
     ratings: Ratings;
+    statistics?: Statistics;
     qualityProfileId?: number;
     languageProfileId?: number;
     id?: number;

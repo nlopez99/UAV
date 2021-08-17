@@ -1,8 +1,9 @@
 require('dotenv').config();
+import { Config } from '../typings/config';
 
-export const config = {
+export const config: Config = {
     app: {
-        listeningPort: process.env.PORT
+        listeningPort: parseInt(process.env.PORT)
     },
     radarr: {
         apiKey: process.env.RADARR_API_KEY,

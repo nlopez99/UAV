@@ -11,12 +11,12 @@
         "inlineSources": true,
         "esModuleInterop": true,
         "typeRoots": [
-            "types/",
+            "src/typings/",
             "node_modules/@types"
         ]
     },
     "exclude": [
         "node_modules",
-        "dist"
+        "dist",
     ]
 }

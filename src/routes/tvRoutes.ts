@@ -9,6 +9,7 @@ const {
 } = config;
 
 const serviceOptions: MediaServiceConstructorOptions = {
+    apiKey: apiKey,
     rootFolderPath: rootFolderPath,
     hostURL: hostURL,
     defaultQualityProfileId: 4,
@@ -37,9 +38,13 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/library', async (req: Request, res: Response) => {
     try {
         const series: TVSeries[] = await tvService.getAllInLibrary();
-        res.status(200).json(series);
-    } catch {
-        res.status(500).send('Internal Server Error');
+        if (series !== []) {
+            res.status(200).json(series);
+        } else {
+            res.send('Unable to retrieve library').status(404);
+        }
+    } catch (err) {
+        res.status(500).send('Internal Server Error: ' + err.message);
     }
 });
 
@@ -49,8 +54,12 @@ router.post('/', async (req: Request, res: Response) => {
     if (seriesExistsInLibrary) {
         res.status(409).send('Series already exists in library');
     } else {
-        tvService.download(series);
-        res.status(201).send(`Series ${series.title} added to library`);
+        try {
+            tvService.download(series);
+            res.status(201).send(`Series ${series.title} added to library`);
+        } catch (err) {
+            console.log(err.message);
+        }
     }
 });
 

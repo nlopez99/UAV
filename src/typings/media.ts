@@ -1,4 +1,5 @@
 export type MediaServiceConstructorOptions = {
+    apiKey?: string;
     rootFolderPath: string;
     defaultQualityProfileId: number;
     hostURL: string;

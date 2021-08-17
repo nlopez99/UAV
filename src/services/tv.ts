@@ -8,7 +8,7 @@ export class TVService implements MediaService<TVSeries> {
     private defaultQualityProfileId: number;
     private endpointURL: string;
     private axiosConfig: AxiosConfig;
-    private apiKey: string = 'ba56e43149de40739d4aa2070ed82be6';
+    private apiKey: string;
 
     constructor(serviceOptions: MediaServiceConstructorOptions) {
         Object.assign(this, serviceOptions);
@@ -24,7 +24,7 @@ export class TVService implements MediaService<TVSeries> {
     public async getAllInLibrary(): Promise<TVSeries[]> {
         const response = await axios.get(this.endpointURL, this.axiosConfig);
         const tvShowData: TVSeries[] = response.data;
-        const tvShowsInLibrary = tvShowData.filter((show) => show.sizeOnDisk > 0);
+        const tvShowsInLibrary = tvShowData.filter((show) => show.statistics.sizeOnDisk > 0);
         return tvShowsInLibrary;
     }
 
@@ -37,7 +37,7 @@ export class TVService implements MediaService<TVSeries> {
     }
 
     public async download(series: TVSeries): Promise<void> {
-        const seriesData = this.createSeriesDataToPost(series)
+        const seriesData = this.createSeriesDataToPost(series);
         const response = await axios.post(this.endpointURL + `?apikey=${this.apiKey}`, seriesData);
         const successful = response.status === 201;
         if (!successful) {
