@@ -55,7 +55,7 @@ export class MovieService implements MediaService<Movie> {
 
     public async checkIfExistsInLibrary(movie: Movie): Promise<boolean> {
         const moviesInLibrary: Movie[] = await this.getAllInLibrary();
-        const movieExists: boolean = moviesInLibrary.some((movieInLibrary) => movieInLibrary.tmdbId === movie.tmdbId);
+        const movieExists: boolean = Boolean(moviesInLibrary.filter(movieInLibrary => movieInLibrary.tmdbId === movie.tmdbId).length > 0);
         return movieExists;
     }
 

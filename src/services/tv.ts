@@ -30,9 +30,7 @@ export class TVService implements MediaService<TVSeries> {
 
     public async checkIfExistsInLibrary(series: TVSeries): Promise<boolean> {
         const seriesInLibrary: TVSeries[] = await this.getAllInLibrary();
-        const seriesExists: boolean = seriesInLibrary.some(
-            (seriesInLibrary) => seriesInLibrary.tvdbId === series.tvdbId
-        );
+        const seriesExists: boolean = Boolean(seriesInLibrary.filter(_series => _series.tvdbId === series.tvdbId).length > 0);
         return seriesExists;
     }
 
