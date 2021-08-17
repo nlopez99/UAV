@@ -1,11 +1,6 @@
 import axios from 'axios';
 import { Movie } from '../typings/movie';
 import { MediaService, MediaServiceConstructorOptions, AxiosConfig } from '../typings/media';
-import { config } from '../config/appConfig';
-
-const {
-    radarr: { apiKey, rootFolderPath, hostURL }
-} = config;
 
 export class MovieService implements MediaService<Movie> {
     private rootFolderPath: string;
@@ -55,7 +50,9 @@ export class MovieService implements MediaService<Movie> {
 
     public async checkIfExistsInLibrary(movie: Movie): Promise<boolean> {
         const moviesInLibrary: Movie[] = await this.getAllInLibrary();
-        const movieExists: boolean = Boolean(moviesInLibrary.filter(movieInLibrary => movieInLibrary.tmdbId === movie.tmdbId).length > 0);
+        const movieExists: boolean = Boolean(
+            moviesInLibrary.filter((movieInLibrary) => movieInLibrary.tmdbId === movie.tmdbId).length > 0
+        );
         return movieExists;
     }
 

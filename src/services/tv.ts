@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { TVSeries } from '../typings/tv';
 import { MediaService, MediaServiceConstructorOptions } from '../typings/media';
-import { AxiosConfig } from '../typings/axios';
+import { AxiosConfig } from '../typings/media';
 
 export class TVService implements MediaService<TVSeries> {
     private rootFolderPath: string;
@@ -30,7 +30,9 @@ export class TVService implements MediaService<TVSeries> {
 
     public async checkIfExistsInLibrary(series: TVSeries): Promise<boolean> {
         const seriesInLibrary: TVSeries[] = await this.getAllInLibrary();
-        const seriesExists: boolean = Boolean(seriesInLibrary.filter(_series => _series.tvdbId === series.tvdbId).length > 0);
+        const seriesExists: boolean = Boolean(
+            seriesInLibrary.filter((_series) => _series.tvdbId === series.tvdbId).length > 0
+        );
         return seriesExists;
     }
 

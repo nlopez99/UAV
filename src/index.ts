@@ -18,11 +18,11 @@ app.use(morgan('tiny'));
 app.use('/movie', movieRoutes);
 app.use('/tv', tvRoutes);
 
-// app.use((req: Request, res: Response, next: NextFunction) => {
-//     res.header('Access-Control-Allow-Origin', '*');
-//     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-//     next();
-// });
+app.use((req: Request, res: Response, next: NextFunction) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
 
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
