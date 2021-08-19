@@ -1,7 +1,7 @@
 import express, { Application } from 'express';
 import { config } from './config/appConfig';
-import { movieRoutes } from './routes/movieRoutes';
-import { tvRoutes } from './routes/tvRoutes';
+import { movieRoutes } from './routes/movie';
+import { tvRoutes } from './routes/tv';
 import { Request, Response, NextFunction } from 'express';
 const morgan = require('morgan');
 
