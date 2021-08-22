@@ -5,7 +5,7 @@ export interface Config {
 }
 
 type appConfig = {
-    listeningPort: number;
+    port: number | string;
 };
 
 type serviceConfig = {

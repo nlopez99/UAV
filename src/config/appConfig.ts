@@ -3,7 +3,7 @@ import { Config } from '../typings/config';
 
 export const config: Config = {
     app: {
-        listeningPort: parseInt(process.env.PORT)
+        port: process.env.PORT || 5000
     },
     radarr: {
         apiKey: process.env.RADARR_API_KEY,
