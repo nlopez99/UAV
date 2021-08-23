@@ -6,6 +6,7 @@ export class MovieService implements MediaService<Movie> {
     private rootFolderPath: string;
     private defaultQualityProfileId: number;
     private endpointURL: string;
+    private queueURL: string;
     private axiosConfig: AxiosConfig;
 
     constructor(serviceOptions: MediaServiceConstructorOptions) {
@@ -46,6 +47,17 @@ export class MovieService implements MediaService<Movie> {
         const movies: Movie[] = response.data;
         const availableMovies: Movie[] = movies.filter((movie) => movie.hasFile === true);
         return availableMovies;
+    }
+
+    public async getDownloadQueue(): Promise<any[]> {
+        const response = await axios.get(this.queueURL, this.axiosConfig);
+        const successful = response.status === 200;
+        if (successful) {
+            const queueData: any[] = response.data;
+            return queueData;
+        } else {
+            throw new Error(`${response.status}: ${response.statusText}`);
+        }
     }
 
     public async checkIfExistsInLibrary(movie: Movie): Promise<boolean> {

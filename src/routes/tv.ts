@@ -14,6 +14,7 @@ const serviceOptions: MediaServiceConstructorOptions = {
     hostURL: hostURL,
     defaultQualityProfileId: 4,
     endpointURL: hostURL + 'api/v3/series',
+    queueURL: hostURL + 'api/v3/queue/details',
     axiosConfig: {
         headers: {
             'X-Api-Key': apiKey
@@ -35,6 +36,21 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
+router.post('/', async (req: Request, res: Response) => {
+    const series: TVSeries = req.body;
+    const seriesExistsInLibrary: boolean = await tvService.checkIfExistsInLibrary(series);
+    if (seriesExistsInLibrary) {
+        res.status(409).send('Series already exists in library');
+    } else {
+        try {
+            tvService.download(series);
+            res.status(201).send(`Series ${series.title} added to library`);
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+});
+
 router.get('/library', async (req: Request, res: Response) => {
     try {
         const series: TVSeries[] = await tvService.getAllInLibrary();
@@ -48,18 +64,12 @@ router.get('/library', async (req: Request, res: Response) => {
     }
 });
 
-router.post('/', async (req: Request, res: Response) => {
-    const series: TVSeries = req.body;
-    const seriesExistsInLibrary: boolean = await tvService.checkIfExistsInLibrary(series);
-    if (seriesExistsInLibrary) {
-        res.status(409).send('Series already exists in library');
-    } else {
-        try {
-            tvService.download(series);
-            res.status(201).send(`Series ${series.title} added to library`);
-        } catch (err) {
-            console.log(err.message);
-        }
+router.get('/queue', async (req: Request, res: Response) => {
+    try {
+        const currentQueue: any[] = await tvService.getDownloadQueue();
+        res.status(200).json(currentQueue);
+    } catch (err) {
+        res.status(500).send('Internal Server Error: ' + err);
     }
 });
 
