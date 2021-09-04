@@ -2,6 +2,7 @@ import axios from 'axios';
 import { TVSeries } from '../typings/tv';
 import { MediaService, MediaServiceConstructorOptions } from '../typings/media';
 import { AxiosConfig } from '../typings/media';
+import { convertImageURLToEncodedString } from './image';
 
 export class TVService implements MediaService<TVSeries> {
     private rootFolderPath: string;
@@ -19,7 +20,12 @@ export class TVService implements MediaService<TVSeries> {
         const query = this.convertNameToQueryString(name);
         const tvQueryURL = this.endpointURL + `/lookup?term=${query}`;
         const response = await axios.get(tvQueryURL, this.axiosConfig);
-        return response.data;
+        let tvShows: TVSeries[] = [];
+        for await (const tvShow of response.data) {
+            let cleanTVShow = await this.convertImageURL(tvShow);
+            tvShows.push(cleanTVShow);
+        }
+        return tvShows;
     }
 
     public async getAllInLibrary(): Promise<TVSeries[]> {
@@ -65,6 +71,22 @@ export class TVService implements MediaService<TVSeries> {
         series.qualityProfileId = this.defaultQualityProfileId;
         series.languageProfileId = 1;
         return JSON.stringify(series);
+    }
+
+    private async convertImageURL(tv: TVSeries): Promise<TVSeries> {
+        let imageURLEncoded: string;
+        if (tv.remotePoster) {
+            imageURLEncoded = await convertImageURLToEncodedString(tv.remotePoster);
+            tv.remotePoster = imageURLEncoded;
+        }
+         else if (!tv.images.length || tv.images[0].remoteUrl === undefined) {
+            return tv;
+        } else {
+            const imageURL: string = tv.images[0].remoteUrl;
+            imageURLEncoded = await convertImageURLToEncodedString(imageURL);
+            tv.images[0].remoteUrl = imageURLEncoded;
+        }
+        return tv;
     }
 
     convertNameToQueryString(name: string): string {

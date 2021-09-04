@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Movie } from '../typings/movie';
 import { MediaService, MediaServiceConstructorOptions, AxiosConfig } from '../typings/media';
+import { convertImageURLToEncodedString } from './image';
 
 export class MovieService implements MediaService<Movie> {
     private rootFolderPath: string;
@@ -18,8 +19,12 @@ export class MovieService implements MediaService<Movie> {
             const query: string = this.convertNameToQueryString(name);
             const movieQueryURL = this.endpointURL + `/lookup?term=${query}`;
             const response = await axios.get(movieQueryURL, this.axiosConfig);
-            const movies: Movie[] = response.data;
-            return movies;
+            let movies: Movie[] = [];
+            // for await (const movie of response.data) {
+            //     let cleanMovie = await this.convertImageURL(movie);
+            //     movies.push(cleanMovie);
+            // }
+            return response.data;
         } catch (error) {
             console.log(error);
         }
@@ -85,8 +90,24 @@ export class MovieService implements MediaService<Movie> {
         this.axiosConfig.data = movieData;
     }
 
-    public convertNameToQueryString(name: string): string {
+    convertNameToQueryString(name: string): string {
         const query: string = name.split(' ').join('+');
         return query;
+    }
+
+    private async convertImageURL(movie: Movie): Promise<Movie> {
+        let imageURLEncoded: string;
+        if (movie.remotePoster !== undefined) {
+            const imageURL: string = movie.remotePoster;
+            imageURLEncoded = await convertImageURLToEncodedString(imageURL);
+            movie.remotePoster = imageURLEncoded;
+            return movie;
+        } else if (movie.images.length) {
+            const imageURL: string = movie.images[0].remoteUrl;
+            imageURLEncoded = await convertImageURLToEncodedString(imageURL);
+            movie.images[0].remoteUrl = imageURLEncoded;
+            return movie;
+        }
+        return movie;
     }
 }

@@ -1,9 +1,9 @@
 import express, { Application } from 'express';
+import morgan from 'morgan';
 import { config } from './config/appConfig';
 import { movieRoutes } from './routes/movie';
 import { tvRoutes } from './routes/tv';
 import { Request, Response, NextFunction } from 'express';
-const morgan = require('morgan');
 
 const {
     app: { port }

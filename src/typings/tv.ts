@@ -21,6 +21,7 @@ export interface TVSeries {
     monitored: boolean;
     useSceneNumbering: boolean;
     runtime: number;
+    remotePoster?: string;
     tvdbId: number;
     tvRageId: number;
     tvMazeId: number;
@@ -64,4 +65,5 @@ interface Statistics {
 interface Image {
     coverType: string;
     url: string;
+    remoteUrl?: string;
 }
