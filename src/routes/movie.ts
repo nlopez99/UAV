@@ -12,7 +12,6 @@ const serviceOptions: MediaServiceConstructorOptions = {
     hostURL: hostURL,
     defaultQualityProfileId: 4,
     endpointURL: hostURL + 'api/v3/movie',
-    queueURL: hostURL + 'api/v3/queue/details',
     axiosConfig: {
         headers: {
             'X-Api-Key': apiKey
@@ -34,6 +33,15 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
+router.get('/library', async (req: Request, res: Response) => {
+    try {
+        const movies: Movie[] = await movieService.getAllInLibrary();
+        res.status(200).json(movies);
+    } catch {
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 router.post('/', async (req: Request, res: Response) => {
     const movie: Movie = req.body;
     const movieExistsInLibrary: boolean = await movieService.checkIfExistsInLibrary(movie);
@@ -42,24 +50,6 @@ router.post('/', async (req: Request, res: Response) => {
     } else {
         movieService.download(movie);
         res.status(201).send(`Movie ${movie.title} added to library`);
-    }
-});
-
-router.get('/library', async (req: Request, res: Response) => {
-    try {
-        const movies: Movie[] = await movieService.getAllInLibrary();
-        res.status(200).json(movies);
-    } catch (err) {
-        res.status(500).send('Internal Server Error: ' + err);
-    }
-});
-
-router.get('/queue', async (req: Request, res: Response) => {
-    try {
-        const currentQueue: any[] = await movieService.getDownloadQueue();
-        res.status(200).json(currentQueue);
-    } catch (err) {
-        res.status(500).send('Internal Server Error: ' + err);
     }
 });
 

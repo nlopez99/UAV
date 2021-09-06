@@ -7,7 +7,6 @@ export type MediaServiceConstructorOptions = {
     defaultQualityProfileId: number;
     hostURL: string;
     endpointURL: string;
-    queueURL: string;
     axiosConfig: AxiosConfig;
 };
 export interface MediaService<T extends Movie | TVSeries> {
@@ -16,7 +15,6 @@ export interface MediaService<T extends Movie | TVSeries> {
     download: (postData: T) => Promise<void>;
     checkIfExistsInLibrary: (contentData: T) => Promise<boolean>;
     convertNameToQueryString: (name: string) => string;
-    getDownloadQueue: () => Promise<any[]>;
 }
 
 export type AxiosConfig = {

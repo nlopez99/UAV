@@ -8,7 +8,6 @@ export class TVService implements MediaService<TVSeries> {
     private rootFolderPath: string;
     private defaultQualityProfileId: number;
     private endpointURL: string;
-    private queueURL: string;
     private axiosConfig: AxiosConfig;
     private apiKey: string;
 
@@ -43,25 +42,14 @@ export class TVService implements MediaService<TVSeries> {
         return seriesExists;
     }
 
-    public async getDownloadQueue(): Promise<any[]> {
-        const response = await axios.get(this.queueURL, this.axiosConfig);
-        const successful = response.status === 200;
-        if (successful) {
-            const queueData: any[] = response.data;
-            return queueData;
-        } else {
-            throw new Error(`${response.status}: ${response.statusText}`);
-        }
-    }
-
     public async download(series: TVSeries): Promise<void> {
         const seriesData = this.createSeriesDataToPost(series);
         const response = await axios.post(this.endpointURL + `?apikey=${this.apiKey}`, seriesData);
         const successful = response.status === 201;
-        if (successful) {
-            console.log(`${series.title} was successfully added to Radarr`);
-        } else {
+        if (!successful) {
             throw new Error(`${response.status}: ${response.statusText}`);
+        } else {
+            console.log(`${series.title} was successfully added to Radarr`);
         }
     }
 
