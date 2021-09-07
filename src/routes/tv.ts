@@ -3,6 +3,7 @@ import { TVSeries } from '../typings/tv';
 import { MediaServiceConstructorOptions } from '../typings/media';
 import { TVService } from '../services/tv';
 import { config } from '../config/appConfig';
+import { getImagesInBucket } from '../services/s3';
 
 const {
     sonarr: { apiKey, rootFolderPath, hostURL }
@@ -22,6 +23,11 @@ const serviceOptions: MediaServiceConstructorOptions = {
 };
 
 const tvService = new TVService(serviceOptions);
+getImagesInBucket().then(images => {
+    tvService.setS3Images(images);
+}).catch(err => {
+    console.log(err.message);
+});
 
 const router = Router();
 
