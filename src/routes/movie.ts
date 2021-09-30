@@ -48,9 +48,16 @@ router.post('/', async (req: Request, res: Response) => {
   if (movieExistsInLibrary) {
     res.status(409).send('Movie already exists in library');
   } else {
-    movieService.download(movie);
-    res.status(201).send(`Movie ${movie.title} added to library`);
+    const downloading = await movieService.download(movie);
+    if (downloading) {
+      res.status(201).send(`Movie ${movie.title} added to library`);
+    }
   }
+});
+
+router.get('/downloads', async (req: Request, res: Response) => {
+  const currentDownloads = await movieService.getCurrentDownloads();
+  res.status(200).json(currentDownloads);
 });
 
 export const movieRoutes = router;

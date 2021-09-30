@@ -35,6 +35,7 @@ export interface Movie {
   tags: any[];
   added: string;
   ratings: Ratings;
+  id?: number;
 }
 
 interface Ratings {

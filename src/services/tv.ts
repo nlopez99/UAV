@@ -1,12 +1,14 @@
 import axios from 'axios';
 import { TVSeries } from '../typings/tv';
+import { TVDownload } from '../typings/download';
 import { MediaService, MediaServiceConstructorOptions } from '../typings/media';
 import { AxiosConfig } from '../typings/media';
-import { uploadFileFromURL } from './s3';
+import { uploadFileFromURL, getImagesInBucket } from './s3';
 
 export class TVService implements MediaService<TVSeries> {
   private rootFolderPath: string;
   private defaultQualityProfileId: number;
+  private hostURL: string;
   private endpointURL: string;
   private axiosConfig: AxiosConfig;
   private apiKey: string;
@@ -23,7 +25,7 @@ export class TVService implements MediaService<TVSeries> {
     const tvQueryURL = this.endpointURL + `/lookup?term=${query}`;
     const response = await axios.get(tvQueryURL, this.axiosConfig);
     const tvShows = await this.uploadImagesToS3(response.data as TVSeries[]);
-    return tvShows;
+    return tvShows.slice(0, 4);
   }
 
   public async getAllInLibrary(): Promise<TVSeries[]> {
@@ -32,6 +34,12 @@ export class TVService implements MediaService<TVSeries> {
     const tvShowsInLibrary = tvShowData.filter((show) => show.statistics.sizeOnDisk > 0);
     const tvShows = await this.uploadImagesToS3(tvShowsInLibrary as TVSeries[]);
     return tvShows;
+  }
+
+  public async getCurrentDownloads(): Promise<TVSeries[]> {
+    const response = await axios.get(this.hostURL + '/api/v3/queue/details', this.axiosConfig);
+    const tvShowData: TVSeries[] = response.data;
+    return tvShowData;
   }
 
   public async checkIfExistsInLibrary(series: TVSeries): Promise<boolean> {
@@ -56,8 +64,9 @@ export class TVService implements MediaService<TVSeries> {
   private createSeriesDataToPost(series: TVSeries): string {
     const seriesFolderPath: string = this.rootFolderPath + series.title;
     series.path = seriesFolderPath;
-    series.qualityProfileId = this.defaultQualityProfileId;
-    series.languageProfileId = 1;
+    series.profileId = this.defaultQualityProfileId;
+    series.monitored = true;
+
     return JSON.stringify(series);
   }
 
@@ -122,8 +131,14 @@ export class TVService implements MediaService<TVSeries> {
     );
   }
 
-  public setS3Images(images: string[]): void {
-    this.s3Images = images;
+  public setS3Images(): void {
+    getImagesInBucket()
+      .then((images) => {
+        this.s3Images = images;
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
   }
 
   convertNameToQueryString(name: string): string {

@@ -12,7 +12,7 @@ export type MediaServiceConstructorOptions = {
 export interface MediaService<T extends Movie | TVSeries> {
   getAllInLibrary: () => Promise<T[]>;
   searchByName: (name: string) => Promise<T[]>;
-  download: (postData: T) => Promise<void>;
+  download: (postData: T) => Promise<void | boolean>;
   checkIfExistsInLibrary: (contentData: T) => Promise<boolean>;
   convertNameToQueryString: (name: string) => string;
 }

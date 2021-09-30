@@ -23,13 +23,7 @@ const serviceOptions: MediaServiceConstructorOptions = {
 };
 
 const tvService = new TVService(serviceOptions);
-getImagesInBucket()
-  .then((images) => {
-    tvService.setS3Images(images);
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
+tvService.setS3Images();
 
 const router = Router();
 

@@ -5,6 +5,7 @@ import { MediaService, MediaServiceConstructorOptions, AxiosConfig } from '../ty
 export class MovieService implements MediaService<Movie> {
   private rootFolderPath: string;
   private defaultQualityProfileId: number;
+  private hostURL: string;
   private endpointURL: string;
   private axiosConfig: AxiosConfig;
 
@@ -17,26 +18,45 @@ export class MovieService implements MediaService<Movie> {
       const query: string = this.convertNameToQueryString(name);
       const movieQueryURL = this.endpointURL + `/lookup?term=${query}`;
       const response = await axios.get(movieQueryURL, this.axiosConfig);
-      return response.data;
+      return response.data.slice(0, 4);
     } catch (error) {
       console.log(error);
     }
   }
 
-  public async download(movie: Movie): Promise<void> {
+  public async download(movie: Movie): Promise<boolean> {
     try {
       const movieData: string = this.createMovieDataToPost(movie);
       this.addMovieDataToConfig(movieData);
-      const response = await axios.post(this.endpointURL, this.axiosConfig);
-      const successful = response.status === 201;
+      const response = await axios.post(
+        this.endpointURL + `?apiKey=${this.axiosConfig.headers['X-Api-Key']}`,
+        movieData
+      );
+      const success = response.status === 201;
 
-      if (!successful) {
+      if (!success) {
         throw new Error(`${response.status}: ${response.statusText}`);
       } else {
         console.log(`${movie.title} was successfully added to Radarr`);
       }
+
+      const movieId: number = response.data.id;
+
+      const searchMovieResponse = await axios.post(
+        this.hostURL + 'api/v3/command' + `?apiKey=${this.axiosConfig.headers['X-Api-Key']}`,
+        JSON.stringify({ name: 'MoviesSearch', movieIds: [movieId] })
+      );
+
+      const downloadSuccess = searchMovieResponse.status === 201;
+      if (!downloadSuccess) {
+        throw new Error(`${searchMovieResponse.status}: ${searchMovieResponse.statusText}`);
+      } else {
+        console.log(`${movie.title} was successfully downloaded`);
+        return true;
+      }
     } catch (error) {
       console.log(error);
+      return false;
     }
   }
 
@@ -55,8 +75,19 @@ export class MovieService implements MediaService<Movie> {
     return movieExists;
   }
 
+  public async getCurrentDownloads(): Promise<Movie[]> {
+    const response = await axios.get(
+      this.hostURL + 'api/v3/queue/details' + `?apiKey=${this.axiosConfig.headers['X-Api-Key']}`,
+      this.axiosConfig
+    );
+    const movieDownloads: Movie[] = response.data;
+    return movieDownloads;
+  }
+
   private createMovieDataToPost(movie: Movie): string {
     const movieData: Movie = this.setRadarrConfigDataOnJSON(movie);
+    movieData.monitored = true;
+    movieData.id = 0;
     return JSON.stringify(movieData);
   }
 
@@ -77,3 +108,10 @@ export class MovieService implements MediaService<Movie> {
     return query;
   }
 }
+
+// QualityProfileId: 'Quality Profile Id' must be greater than '0'.
+//  -- QualityProfileId: QualityProfile does not exist
+//  -- Path: Invalid Path
+//  -- RootFolderPath: Invalid Path
+//  -- Title: 'Title' must not be empty.
+//  -- TmdbId: 'Tmdb Id' must not be empty.
