@@ -23,6 +23,7 @@ const serviceOptions: MediaServiceConstructorOptions = {
 };
 
 const tvService = new TVService(serviceOptions);
+
 tvService.setS3Images();
 
 const router = Router();
@@ -40,7 +41,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/library', async (req: Request, res: Response) => {
   try {
     const series: TVSeries[] = await tvService.getAllInLibrary();
-    if (series !== []) {
+    if (series) {
       res.status(200).json(series);
     } else {
       res.send('Unable to retrieve library').status(404);
@@ -63,6 +64,11 @@ router.post('/', async (req: Request, res: Response) => {
       console.log(err.message);
     }
   }
+});
+
+router.get('/downloads', async (req: Request, res: Response) => {
+  const series: TVSeries[] = await tvService.getCurrentDownloads();
+  series ? res.status(200).json(series) : res.status(404).send('Unable to retrieve downloads');
 });
 
 export const tvRoutes = router;

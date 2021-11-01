@@ -25,7 +25,7 @@ export class TVService implements MediaService<TVSeries> {
     const tvQueryURL = this.endpointURL + `/lookup?term=${query}`;
     const response = await axios.get(tvQueryURL, this.axiosConfig);
     const tvShows = await this.uploadImagesToS3(response.data as TVSeries[]);
-    return tvShows.slice(0, 4);
+    return tvShows.slice(0, 5);
   }
 
   public async getAllInLibrary(): Promise<TVSeries[]> {
@@ -37,9 +37,12 @@ export class TVService implements MediaService<TVSeries> {
   }
 
   public async getCurrentDownloads(): Promise<TVSeries[]> {
-    const response = await axios.get(this.hostURL + '/api/v3/queue/details', this.axiosConfig);
-    const tvShowData: TVSeries[] = response.data;
-    return tvShowData;
+    const response = await axios.get(
+      this.hostURL + `api/v3/queue/details?apiKey=${this.axiosConfig.headers['X-Api-Key']}`,
+      this.axiosConfig
+    );
+    const movieDownloads: TVSeries[] = response.data;
+    return movieDownloads;
   }
 
   public async checkIfExistsInLibrary(series: TVSeries): Promise<boolean> {
@@ -65,6 +68,8 @@ export class TVService implements MediaService<TVSeries> {
     const seriesFolderPath: string = this.rootFolderPath + series.title;
     series.path = seriesFolderPath;
     series.profileId = this.defaultQualityProfileId;
+    series.languageProfileId = 1;
+    series.qualityProfileId = this.defaultQualityProfileId;
     series.monitored = true;
 
     return JSON.stringify(series);
